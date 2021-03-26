@@ -8,7 +8,7 @@ use std::{env, process};
 use anyhow::{anyhow, bail, Context, Result};
 use rustc_version::Channel;
 
-use self::rustc::Target;
+use self::rustc::{Src, Target};
 
 mod cargo;
 mod cli;
@@ -159,24 +159,28 @@ pub fn build(args: Args, command_name: &str, crate_config: Option<Config>) -> Re
 
     // We can't build sysroot with stable or beta due to unstable features
     let sysroot = rustc::sysroot(verbose)?;
-    let src = match meta.channel {
-        Channel::Dev => rustc::Src::from_env().ok_or(anyhow!(
-            "The XARGO_RUST_SRC env variable must be set and point to the \
+    let src = if let Some(ref src_path) = crate_config.src_path {
+        Src::from_path(src_path.clone())
+    } else {
+        match meta.channel {
+            Channel::Dev => rustc::Src::from_env().ok_or(anyhow!(
+                "The XARGO_RUST_SRC env variable must be set and point to the \
              Rust source directory when working with the 'dev' channel",
-        ))?,
-        Channel::Nightly => {
-            if let Some(src) = rustc::Src::from_env() {
-                src
-            } else {
-                sysroot.src()?
+            ))?,
+            Channel::Nightly => {
+                if let Some(src) = rustc::Src::from_env() {
+                    src
+                } else {
+                    sysroot.src()?
+                }
             }
-        }
-        Channel::Stable | Channel::Beta => {
-            bail!(
-                "The sysroot can't be built for the {:?} channel. \
+            Channel::Stable | Channel::Beta => {
+                bail!(
+                    "The sysroot can't be built for the {:?} channel. \
                  Switch to nightly.",
-                meta.channel
-            );
+                    meta.channel
+                );
+            }
         }
     };
 

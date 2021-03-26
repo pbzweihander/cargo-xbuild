@@ -8,6 +8,7 @@ pub struct Config {
     pub memcpy: bool,
     pub sysroot_path: PathBuf,
     pub panic_immediate_abort: bool,
+    pub src_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -15,6 +16,7 @@ struct ParseConfig {
     pub memcpy: Option<bool>,
     pub sysroot_path: Option<String>,
     pub panic_immediate_abort: Option<bool>,
+    pub src_path: Option<PathBuf>,
 }
 
 impl Config {
@@ -62,6 +64,7 @@ impl Config {
             memcpy: config.memcpy.unwrap_or(true),
             sysroot_path: PathBuf::from(config.sysroot_path.unwrap_or("target/sysroot".into())),
             panic_immediate_abort: config.panic_immediate_abort.unwrap_or(false),
+            src_path: config.src_path,
         })
     }
 }

@@ -41,6 +41,10 @@ pub struct Src {
 }
 
 impl Src {
+    pub(crate) fn from_path(path: PathBuf) -> Self {
+        Self { path }
+    }
+
     pub fn from_env() -> Option<Self> {
         env::var_os("XARGO_RUST_SRC").map(|s| Src {
             path: PathBuf::from(s),
